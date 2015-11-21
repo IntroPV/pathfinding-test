@@ -3,10 +3,17 @@ package ar.pablitar.pathfinding
 import com.uqbar.vainilla.GameScene
 import ar.pablitar.pathfinding.components.TileMap
 import ar.pablitar.pathfinding.components.Cursor
+import ar.pablitar.pathfinding.components.Regenerator
 
 class PathfindingGameScene extends GameScene {
-  val tileMap = new TileMap(16, 12)
-  tileMap.addAllTiles(this)
-  
+  var tileMap:TileMap = null
+  generateMap()
+
   this.addComponent(Cursor)
+  this.addComponent(new Regenerator())
+
+  def generateMap() = {
+    tileMap = new TileMap(40, 30)
+    tileMap.addAllTiles(this)
+  }
 }

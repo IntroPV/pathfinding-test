@@ -12,6 +12,7 @@ object Cursor extends GameComponent[GameScene] {
   val diameter = 20
   lazy val radius = diameter / 2
   this.setAppearance(new Circle(Color.WHITE, diameter))
+  this.setZ(10)
   
   override def update(state: DeltaState) = {
     val mousePos = state.getCurrentMousePosition
