@@ -53,37 +53,51 @@ case class Connection(from: Point2D, to: Point2D) {
 }
 
 class DungeonGenerator(xSize: Int, ySize: Int, randomizer: Random) {
+  TimeReporter.startEvent("Generating Rooms")
   val rooms = generateRooms
 
+  TimeReporter.endEvent("Generating Rooms")
+
+  TimeReporter.startEvent("Generating Connections")
   val mainPath = generateConnectionsBetweenRooms
+  TimeReporter.endEvent("Generating Connections")
 
   //  val connections = List()
 
   def generate = Dungeon(rooms, mainPath)
 
   def generateRooms = {
-    val minRoomSize = 3
-    val maxRoomSize = 5
+    val minRoomSize = 8
+    val maxRoomSize = 15
     val minDistance = 1
 
     var rooms = List[Room]()
 
-    lazy val possibleRooms = {
-      for (
+    var possibleRooms = {
+      TimeReporter.startEvent("Generating Possible Rooms")
+      val possibleRooms = for (
         i <- 0 to (xSize - minRoomSize);
         j <- 0 to (ySize - minRoomSize);
         width <- (minRoomSize to maxRoomSize.min(xSize - i));
         height <- (minRoomSize to maxRoomSize.min(ySize - j))
       ) yield Room(i, j, width, height)
+      
+      TimeReporter.endEvent("Generating Possible Rooms")
 
+      possibleRooms
     }
 
     def isPlaceable(room: Room) = {
-      !rooms.exists { existingRoom => existingRoom.overlapsWith(room, minDistance) }
+//      TimeReporter.startEvent(s"Evaluating room ${room}")
+      val placeable = !rooms.exists { existingRoom => existingRoom.overlapsWith(room, minDistance) }
+//      TimeReporter.endEvent(s"Evaluating room ${room}")
+      placeable
     }
 
     def roomCandidates = {
-      for (room <- possibleRooms if isPlaceable(room)) yield room
+      var candidateRooms = for (room <- possibleRooms if isPlaceable(room)) yield room
+      possibleRooms = candidateRooms
+      possibleRooms
     }
 
     val roomsStream = {
@@ -98,9 +112,11 @@ class DungeonGenerator(xSize: Int, ySize: Int, randomizer: Random) {
       loop
     }
 
+    TimeReporter.startEvent(s"Evaluating rooms")
     for (room <- roomsStream) {
       rooms = rooms :+ room
     }
+    TimeReporter.endEvent(s"Evaluating rooms")
 
     rooms
   }

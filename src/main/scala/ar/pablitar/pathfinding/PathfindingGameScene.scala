@@ -13,7 +13,7 @@ class PathfindingGameScene extends GameScene {
   this.addComponent(new Regenerator())
 
   def generateMap() = {
-    tileMap = new TileMap(40, 30)
+    tileMap = new TileMap(80, 60)
     tileMap.addAllTiles(this)
   }
 }
