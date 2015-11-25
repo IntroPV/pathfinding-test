@@ -20,21 +20,36 @@ case class Room(i: Int, j: Int, width: Int, height: Int) {
 
   def minDistanceTo(aRoom: Room) = {
     (for (
-      aTile <- this.tiles();
-      otherTile <- aRoom.tiles()
+      aTile <- this.borderTiles();
+      otherTile <- aRoom.borderTiles()
     ) yield aTile.distanceSq(otherTile)).min
   }
 
-  def tiles(offsetX: Int = 0, offsetY:Int = 0) = {
-    
+  def borderTiles(excludeCorners: Boolean = false) = {
+    for (
+      v <- i to i + width;
+      w <- j to j + height if isBorder(v, w, excludeCorners)
+    ) yield new Point2D.Float(v, w)
+  }
+
+  def isBorder(v: Int, w: Int, excludeCorners: Boolean) = {
+    (v == i || v == i + width ^ w == j || w == j + height) &&
+      (!excludeCorners || !isCorner(v, w))
+  }
+
+  def isCorner(v: Int, w: Int) = {
+    (v == i || v == i + width) && (w == j || w == j + height)
+  }
+
+  def tiles(offsetX: Int = 0, offsetY: Int = 0) = {
     for (
       i <- (i + offsetX) to (i + width - offsetX);
       j <- (j + offsetY) to (j + height - offsetY)
     ) yield new Point2D.Float(i, j)
   }
-  
+
   def centerTiles = {
-    tiles(1,1)
+    borderTiles(true)
   }
 
   def tilesCloserTo(destination: Room) = {
@@ -67,8 +82,8 @@ class DungeonGenerator(xSize: Int, ySize: Int, randomizer: Random) {
   def generate = Dungeon(rooms, mainPath)
 
   def generateRooms = {
-    val minRoomSize = 8
-    val maxRoomSize = 15
+    val minRoomSize = 15
+    val maxRoomSize = 20
     val minDistance = 1
 
     var rooms = List[Room]()
@@ -81,16 +96,16 @@ class DungeonGenerator(xSize: Int, ySize: Int, randomizer: Random) {
         width <- (minRoomSize to maxRoomSize.min(xSize - i));
         height <- (minRoomSize to maxRoomSize.min(ySize - j))
       ) yield Room(i, j, width, height)
-      
+
       TimeReporter.endEvent("Generating Possible Rooms")
 
       possibleRooms
     }
 
     def isPlaceable(room: Room) = {
-//      TimeReporter.startEvent(s"Evaluating room ${room}")
+      //      TimeReporter.startEvent(s"Evaluating room ${room}")
       val placeable = !rooms.exists { existingRoom => existingRoom.overlapsWith(room, minDistance) }
-//      TimeReporter.endEvent(s"Evaluating room ${room}")
+      //      TimeReporter.endEvent(s"Evaluating room ${room}")
       placeable
     }
 

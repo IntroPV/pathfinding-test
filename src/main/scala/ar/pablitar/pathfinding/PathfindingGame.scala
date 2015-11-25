@@ -5,7 +5,7 @@ import java.awt.Dimension
 
 class PathfindingGame extends Game {
   def getDisplaySize(): Dimension = {
-    new Dimension(800, 600)
+    new Dimension(1280, 800)
   }
 
   def getTitle(): String = {
